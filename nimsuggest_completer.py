@@ -37,8 +37,8 @@ class NimsuggestCompleter(Completer):
         return self._Exec(filepath, linenum, colnum, contents)
 
     def _Exec(self, filename, linenum, column, contents):
-        args = [self._binary, '--stdin', filename]
-        p = Popen(args, stdin = PIPE, stdout = PIPE, stderr = PIPE, shell=True)
+        args = ['--stdin', filename]
+        p = Popen(args, executable = self._binary, stdin = PIPE, stdout = PIPE, stderr = PIPE, shell=True)
         dirtyfile = None
         if contents:
             dirtyfile = tempfile.mkstemp()[1]
