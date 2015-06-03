@@ -25,8 +25,8 @@ class NimsuggestCompleter(Completer):
     def SupportedFiletypes(self):
         return set(['nim'])
 
-    def ShouldUseNow(self):
-        return True
+    def ShouldUseNowInner(self, request_data):
+        return len(self.ComputeCandidatesInner(request_data)) > 0
 
     def ComputeCandidatesInner(self, request_data):
         filepath = request_data['filepath']
@@ -34,9 +34,9 @@ class NimsuggestCompleter(Completer):
         colnum = request_data['column_num']
         contents = utils.ToUtf8IfNeeded(
             request_data['file_data'][filepath]['contents'])
-        return self._Exec(filepath, linenum, colnum, contents)
+        return self._Suggest(filepath, linenum, colnum, contents)
 
-    def _Exec(self, filename, linenum, column, contents):
+    def _Suggest(self, filename, linenum, column, contents):
         args = ['--stdin', filename]
         p = Popen(args, executable = self._binary, stdin = PIPE, stdout = PIPE, stderr = PIPE, shell=True)
         dirtyfile = None
@@ -45,15 +45,19 @@ class NimsuggestCompleter(Completer):
             open(dirtyfile, 'w').write(contents)
         cmd = 'sug %s%s:%d:%d\nquit\n' % (filename, ';' + 
                 dirtyfile if dirtyfile else '', linenum, column)
-        data, err = p.communicate(cmd)
-        if dirtyfile:
-            os.unlink(dirtyfile)
+        try:
+            data, err = p.communicate(cmd)
 
-        return [self._CreateCompletionData(line,
-                    contents.splitlines()[linenum] if contents and len(contents) >= linenum else None)
-                for line in list(itertools.dropwhile(
-                    lambda l: not l.startswith('>'), data.splitlines()))[1:]
-                if line.startswith('sug')]
+            return [self._CreateCompletionData(line,
+                        contents.splitlines()[linenum] if contents and len(contents) >= linenum else None)
+                    for line in list(itertools.dropwhile(
+                        lambda l: not l.startswith('>'), data.splitlines()))[1:]
+                    if line.startswith('sug')]
+        except KeyboardInterrupt:
+            pass
+        finally:
+            if dirtyfile:
+                os.unlink(dirtyfile)
 
     def _CreateCompletionData(self, line, contents):
         skType, name, typeName, filename, linenum, colnum, comment = line.split('\t')[1:]
