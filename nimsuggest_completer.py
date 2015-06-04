@@ -22,6 +22,8 @@ class NimsuggestCompleter(Completer):
             _logger.error(msg)
             raise RuntimeError(msg)
 
+        _logger.info('Nimsuggest completer loaded')
+
     def SupportedFiletypes(self):
         return set(['nim'])
 
@@ -48,6 +50,10 @@ class NimsuggestCompleter(Completer):
         try:
             data, err = p.communicate(cmd)
 
+            if p.returncode != 0:
+                _logger.error('Nimsuggest retcode %d: %s' % (p.returncode, data))
+                return []
+
             return [self._CreateCompletionData(line,
                         contents.splitlines()[linenum] if contents and len(contents) >= linenum else None)
                     for line in list(itertools.dropwhile(
@@ -58,6 +64,7 @@ class NimsuggestCompleter(Completer):
         finally:
             if dirtyfile:
                 os.unlink(dirtyfile)
+        return []
 
     def _CreateCompletionData(self, line, contents):
         skType, name, typeName, filename, linenum, colnum, comment = line.split('\t')[1:]
@@ -71,5 +78,5 @@ class NimsuggestCompleter(Completer):
                 menu_text = longname,
                 extra_menu_info = skType,
                 kind = typeName,
-                detailed_info = comment.strip('"').replace('\\x0A', '\n') if comment != '""' else ' ')
+                detailed_info = comment.strip('"').replace('\\x0A', '\n') if comment != '""' else None)
                 
