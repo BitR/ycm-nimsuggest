@@ -19,6 +19,6 @@ This wrapper is currently at the prototype level and has quite a way to go, **us
         git clone https://github.com/BitR/ycm-nimsuggest \
         $HOME/.vim/bundle/YouCompleteMe/third_party/ycmd/ycmd/completers/nim
 
-Make sure to have an autocommand for .nim files (faith/vim-go provides this one):
+Make sure to have an autocommand for .nim files ([zah/nimrod.vim](https://github.com/zah/nimrod.vim) provides this one):
 
     au BufNewFile,BufRead *.nim set filetype=nim
