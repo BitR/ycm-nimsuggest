@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import tempfile
 import logging
 import itertools
@@ -12,6 +13,18 @@ from ycmd import utils
 
 _logger = logging.getLogger(__name__)
 
+def log(level, msg):
+    _logger.log(level, '[nimcompl] %s' % msg)
+
+def error(msg):
+    log(logging.ERROR, msg)
+
+def info(msg):
+    log(logging.INFO, msg)
+
+def debug(msg):
+    log(logging.DEBUG, msg)
+
 class NimsuggestCompleter(Completer):
     def __init__(self, user_options):
         super(NimsuggestCompleter, self).__init__(user_options)
@@ -19,10 +32,10 @@ class NimsuggestCompleter(Completer):
 
         if not self._binary:
             msg = "Couldn't find nimsuggest binary. Is it in the path?"
-            _logger.error(msg)
+            error(msg)
             raise RuntimeError(msg)
 
-        _logger.info('Nimsuggest completer loaded')
+        info('Nimsuggest completer loaded')
 
     def SupportedFiletypes(self):
         return set(['nim'])
@@ -51,11 +64,11 @@ class NimsuggestCompleter(Completer):
             data, err = p.communicate(cmd)
 
             if p.returncode != 0:
-                _logger.error('Nimsuggest retcode %d: %s' % (p.returncode, data))
+                error('Nimsuggest retcode %d: %s' % (p.returncode, data))
                 return []
 
             return [self._CreateCompletionData(line,
-                        contents.splitlines()[linenum] if contents and len(contents) >= linenum else None)
+                        contents.splitlines()[linenum-1] if contents and len(contents) >= linenum - 1 else None)
                     for line in list(itertools.dropwhile(
                         lambda l: not l.startswith('>'), data.splitlines()))[1:]
                     if line.startswith('sug')]
@@ -80,3 +93,34 @@ class NimsuggestCompleter(Completer):
                 kind = typeName,
                 detailed_info = comment.strip('"').replace('\\x0A', '\n') if comment != '""' else None)
                 
+if __name__ == "__main__":
+    compl = NimsuggestCompleter(
+            {
+                'min_num_of_chars_for_completion': 1,
+                'auto_trigger': None
+                })
+    tmpfile = tempfile.mkstemp()[1]
+    contents = """import math
+
+a = open('/dev/zero', 'r')
+a.
+"""
+    with open(tmpfile, 'w') as f:
+        f.write(contents)
+
+    try:
+        request_data = {
+            'filepath': tmpfile,
+            'line_num': 4,
+            'column_num': 3,
+            'file_data': {
+                tmpfile: {
+                    'contents': contents
+                }
+            }
+        }
+        compl.ComputeCandidatesInner(request_data)
+        compl.ComputeCandidatesInner(request_data)
+        #print compl.ComputeCandidatesInner(request_data)
+    finally:
+        os.unlink(tmpfile)
