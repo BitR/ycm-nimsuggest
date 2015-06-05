@@ -30,7 +30,7 @@ def info(msg):
 def debug(msg):
     log(logging.DEBUG, msg)
 
-COMPLETION_TIMEOUT=0.05
+COMPLETION_TIMEOUT=0.2
 BOOT_TIMEOUT=2
 
 class NimsuggestCompleter(Completer):
@@ -83,14 +83,9 @@ class NimsuggestCompleter(Completer):
         self._readthread.daemon = True
         self._readthread.start()
 
-    def _Cmd(self, data):
-        if not hasattr(self, '_proc'):
-            # Seems the thread isn't quite ready yet
-            return ''
-        self._proc.stdin.write(data)
-        self._proc.stdin.flush()
-        output = ''
+    def _ReadResult(self, data):
         found_cmd = False
+        output = ''
         while True:
             try:
                 d = self._dataqueue.get(timeout=(COMPLETION_TIMEOUT if found_cmd else BOOT_TIMEOUT))
@@ -98,9 +93,23 @@ class NimsuggestCompleter(Completer):
                     output = ''
                     found_cmd = True
                     continue
+                # Find marker
+                if d.startswith('> '):
+                    break
                 output += d
             except Empty:
                 break
+        return output
+
+    def _Cmd(self, data):
+        if not hasattr(self, '_proc'):
+            # Seems the thread isn't quite ready yet
+            return ''
+        self._proc.stdin.write(data)
+        # Add marker ('> ')
+        self._proc.stdin.write('\n')
+        self._proc.stdin.flush()
+        output = self._ReadResult(data)
         return output
 
     def ShouldUseNowInner(self, request_data):
