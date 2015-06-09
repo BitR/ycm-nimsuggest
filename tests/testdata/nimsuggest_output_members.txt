@@ -1,0 +1,17 @@
+config/nim.cfg(53, 3) Hint: added path: '/home/user/.babel/pkgs/' [Path]
+config/nim.cfg(54, 3) Hint: added path: '/home/user/.nimble/pkgs/compiler-0.11.3' [Path]
+config/nim.cfg(54, 3) Hint: added path: '/home/user/.nimble/pkgs/nimble-0.6.0' [Path]
+config/nim.cfg(54, 3) Hint: added path: '/home/user/.nimble/pkgs/nimsuggest-0.1.0' [Path]
+config/nim.cfg(54, 3) Hint: added path: '/home/user/.nimble/pkgs/' [Path]
+Hint: used config file '/nim/config/nim.cfg' [Conf]
+usage: sug|con|def|use file.nim[;dirtyfile.nim]:line:col
+type 'quit' to quit
+type 'debug' to toggle debug mode on/off
+type 'terse' to toggle terse mode on/off
+> sug testdata/test.nim:4:3
+sug	skProc	system.abs	proc (x: int): int{.noSideEffect, gcsafe, locks: 0.}	/nim/lib/system.nim	2297	5	""
+sug	skProc	math.binom	proc (n: int, k: int): int{.noSideEffect, gcsafe, locks: 0.}	/nim/lib/pure/math.nim	71	5	"computes the binomial coefficient"
+sug	skProc	math.ceil	proc (x: float): float{.noSideEffect.}	/nim/lib/pure/math.nim	227	7	""
+
+> 
+>
