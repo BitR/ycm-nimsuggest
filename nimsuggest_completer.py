@@ -177,4 +177,5 @@ class NimsuggestCompleter(Completer):
                 menu_text = longname,
                 extra_menu_info = skType,
                 kind = typeName,
-                detailed_info = comment.strip('"').replace('\\x0A', '\n') if comment != '""' else None)
+                detailed_info = '%s: %s\n%s' %
+                    (name, typeName, comment.strip('"').replace('\\x0A', '\n') if comment != '""' else ''))

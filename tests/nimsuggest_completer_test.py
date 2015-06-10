@@ -58,7 +58,8 @@ class NimsuggestCompleter_test( object ):
         'menu_text': 'abs (system.abs)', 
         'insertion_text': 'abs', 
         'kind': 'proc (x: int): int{.noSideEffect, gcsafe, locks: 0.}',
-        'extra_menu_info': 'skProc'}, 
+        'extra_menu_info': 'skProc',
+        'detailed_info': 'abs: proc (x: int): int{.noSideEffect, gcsafe, locks: 0.}\n'}
       ] )
 
   def OnFileReadyToParse_test( self ):
@@ -114,7 +115,6 @@ class MockSubprocess( object ):
   def __init__( self, returncode, stdout, stderr ):
     self.returncode = returncode
     self.stdout = MockPipe(stdout)
-    print 'Stdout: %r' % self.stdout
     self.stderr = MockPipe(stderr)
     self.stdin = MockPipe()
 
