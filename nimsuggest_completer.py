@@ -101,15 +101,11 @@ class NimsuggestCompleter(Completer):
                     output = ''
                     continue
                 # Find marker
-                if d.startswith('> '):
+                if d == '\n' or d.startswith('> '):
                     break
                 output += d
             except Empty:
-                if not self._proc.poll():
-                    warning('[Read] Nimsuggest has exited with code %d' % self._proc.returncode)
-                else:
-                    self._proc.kill()
-                self._StartProc(self._args)
+                info('[Read] Empty - Got: %r' % output)
                 break
         return output
 
@@ -121,8 +117,6 @@ class NimsuggestCompleter(Completer):
 
         try:
             self._proc.stdin.write(data)
-            # Add marker ('> ')
-            self._proc.stdin.write('\n')
             self._proc.stdin.flush()
             output = self._ReadResult()
             return output
@@ -144,6 +138,13 @@ class NimsuggestCompleter(Completer):
             request_data['file_data'][filepath]['contents'])
         return self._Suggest(filepath, linenum, colnum, contents)
 
+    def _EmptyQueue(self):
+        while self._dataqueue.not_empty:
+            try:
+                self._dataqueue.get_nowait()
+            except:
+                break
+
     def _Suggest(self, filename, linenum, column, contents):
         dirtyfile = None
         if contents:
@@ -152,6 +153,7 @@ class NimsuggestCompleter(Completer):
         cmd = 'sug %s%s:%d:%d\n' % (filename, ';' + 
                 dirtyfile if dirtyfile else '', linenum, column)
         try:
+            self._EmptyQueue()
             data = self._Cmd(cmd)
 
             return [self._CreateCompletionData(line,
