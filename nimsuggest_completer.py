@@ -105,7 +105,6 @@ class NimsuggestCompleter(Completer):
                     break
                 output += d
             except Empty:
-                info('[Read] Empty - Got: %r' % output)
                 break
         return output
 

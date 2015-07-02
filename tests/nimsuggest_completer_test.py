@@ -24,6 +24,7 @@ class NimsuggestCompleter_test( object ):
     user_options = user_options_store.DefaultOptions()
     self._completer = NimsuggestCompleter( user_options )
     self._completer._StartProc = self._StartProc
+    self._completer._EmptyQueue = lambda: None
 
   def _StartProc(self, args):
     self._completer._args = args
@@ -38,17 +39,10 @@ class NimsuggestCompleter_test( object ):
         testfile.read() )
     return RequestWrap( request )
 
-#  def FindNimsuggestBinary_test( self ):
-#    user_options = user_options_store.DefaultOptions()
-#
-#    eq_( None,
-#         self._completer._binary )
-
-  # Test line-col to offset in the file after a unicode occurrences.
   def ComputeCandidatesInner_test( self ):
     self._completer._binary = DUMMY_BINARY
     with open( PATH_TO_MEMBERS_RES, 'r' ) as nimsugoutput:
-      mock = MockPopen( returncode=0, stdout=nimsugoutput.read(), stderr='' )
+      mock = MockPopen( stdout=nimsugoutput.read(), stderr='' )
     self._completer._popener = mock
     request = self._BuildRequest(4, 3)
     self._completer.OnFileReadyToParse(request)
@@ -65,7 +59,7 @@ class NimsuggestCompleter_test( object ):
   def OnFileReadyToParse_test( self ):
     self._completer._binary = DUMMY_BINARY
     with open( PATH_TO_MEMBERS_RES, 'r' ) as nimsugoutput:
-      mock = MockPopen( returncode=0, stdout=nimsugoutput.read(), stderr='' )
+      mock = MockPopen( stdout=nimsugoutput.read(), stderr='' )
     self._completer._popener = mock
     request = self._BuildRequest(4, 3)
     self._completer.OnFileReadyToParse(request)
@@ -74,7 +68,7 @@ class NimsuggestCompleter_test( object ):
   def ProcShutsdown_test( self ):
     self._completer._binary = DUMMY_BINARY
     with open( PATH_TO_MEMBERS_RES, 'r' ) as nimsugoutput:
-      mock = MockPopen( returncode=0, stdout=nimsugoutput.read(), stderr='' )
+      mock = MockPopen( stdout=nimsugoutput.read(), stderr='' )
     self._completer._popener = mock
     request = self._BuildRequest(4, 3)
     self._completer.OnFileReadyToParse(request)
@@ -82,7 +76,7 @@ class NimsuggestCompleter_test( object ):
 
     oldproc.kill()
 
-    self._completer._dataqueue = Queue()
+    #self._completer._dataqueue = Queue()
     self._completer.ComputeCandidatesInner(request)
     result = self._completer.ComputeCandidatesInner(request)[0:1]
     assert len(result) > 0
@@ -91,11 +85,18 @@ class NimsuggestCompleter_test( object ):
 class MockPipe(object):
   def __init__(self, contents=None):
     self.data = ''
+    self.shouldRaise = False
     if contents:
       self.lines = contents.splitlines()
     self.line = 0
 
+  def raiseOnUse(self):
+    self.shouldRaise = True
+
   def readline(self):
+    if self.shouldRaise:
+      raise IOError()
+
     if not self.hasdata():
       return None
 
@@ -103,10 +104,14 @@ class MockPipe(object):
     return self.lines[self.line - 1] + '\n'
 
   def write(self, data):
+    if self.shouldRaise:
+      raise IOError()
+
     self.data += data
 
   def flush(self):
-    pass
+    if self.shouldRaise:
+      raise IOError()
 
   def hasdata(self):
     return self.line < len(self.lines)
@@ -123,13 +128,14 @@ class MockSubprocess( object ):
     return ( self.stdout, self.stderr )
 
   def poll(self):
-    if self.returncode or self.stdout.hasdata():
+    if self.stdout.hasdata() and self.returncode == None:
       return None
-    self.returncode = 42
+    self.returncode = self.returncode or 42
     return self.returncode
 
   def kill(self):
     self.returncode = -1
+    self.stdin.raiseOnUse()
 
 class MockPopen( object ):
   def __init__( self, returncode=None, stdout=None, stderr=None ):

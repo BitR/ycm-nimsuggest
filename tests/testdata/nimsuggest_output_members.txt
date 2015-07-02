@@ -14,4 +14,3 @@ sug	skProc	math.binom	proc (n: int, k: int): int{.noSideEffect, gcsafe, locks: 0
 sug	skProc	math.ceil	proc (x: float): float{.noSideEffect.}	/nim/lib/pure/math.nim	227	7	""
 
 > 
->
