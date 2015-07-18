@@ -33,7 +33,7 @@ def info(msg):
 def debug(msg):
     log(logging.DEBUG, msg)
 
-COMPLETION_TIMEOUT=2
+COMPLETION_TIMEOUT=10
 
 class NimsuggestCompleter(Completer):
     def __init__(self, user_options):
@@ -147,10 +147,11 @@ class NimsuggestCompleter(Completer):
     def _Suggest(self, filename, linenum, column, contents):
         dirtyfile = None
         if contents:
-            dirtyfile = tempfile.mkstemp()[1]
-            open(dirtyfile, 'w').write(contents)
+            dirtyfile, dirtyfilename = tempfile.mkstemp()
+            os.write(dirtyfile, contents)
+            os.close(dirtyfile)
         cmd = 'sug %s%s:%d:%d\n' % (filename, ';' + 
-                dirtyfile if dirtyfile else '', linenum, column)
+                dirtyfilename if dirtyfile else '', linenum, column)
         try:
             self._EmptyQueue()
             data = self._Cmd(cmd)
@@ -163,7 +164,7 @@ class NimsuggestCompleter(Completer):
             pass
         finally:
             if dirtyfile:
-                os.unlink(dirtyfile)
+                os.unlink(dirtyfilename)
         return []
 
     def _CreateCompletionData(self, line, contents):
