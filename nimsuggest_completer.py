@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -9,7 +9,7 @@ import itertools
 import time
 import traceback
 from threading import Thread
-from Queue import Queue, Empty
+from queue import Queue, Empty
 
 from subprocess import Popen, PIPE
 from ycmd.completers.completer import Completer
@@ -66,7 +66,7 @@ class NimsuggestCompleter(Completer):
 
         try:
             while not proc.poll():
-                data = proc.stdout.readline()
+                data = proc.stdout.readline().decode('utf-8')
                 self._dataqueue.put(data)
         except:
             error(traceback.format_exc())
@@ -115,7 +115,7 @@ class NimsuggestCompleter(Completer):
             return ''
 
         try:
-            self._proc.stdin.write(data)
+            self._proc.stdin.write(data.encode('utf-8'))
             self._proc.stdin.flush()
             output = self._ReadResult()
             return output
@@ -133,8 +133,7 @@ class NimsuggestCompleter(Completer):
         filepath = request_data['filepath']
         linenum = request_data['line_num']
         colnum = request_data['column_num']
-        contents = utils.ToUtf8IfNeeded(
-            request_data['file_data'][filepath]['contents'])
+        contents = request_data['file_data'][filepath]['contents']
         return self._Suggest(filepath, linenum, colnum, contents)
 
     def _EmptyQueue(self):
@@ -148,7 +147,7 @@ class NimsuggestCompleter(Completer):
         dirtyfile = None
         if contents:
             dirtyfile, dirtyfilename = tempfile.mkstemp()
-            os.write(dirtyfile, contents)
+            os.write(dirtyfile, contents.encode('utf-8'))
             os.close(dirtyfile)
         cmd = 'sug %s%s:%d:%d\n' % (filename, ';' + 
                 dirtyfilename if dirtyfile else '', linenum, column)
@@ -168,7 +167,7 @@ class NimsuggestCompleter(Completer):
         return []
 
     def _CreateCompletionData(self, line, contents):
-        skType, name, typeName, filename, linenum, colnum, comment = line.split('\t')[1:]
+        skType, name, typeName, filename, linenum, colnum, comment, dunno, dunno2 = line.split('\t')[1:]
         longname = name
         if '.' in name:
             name = name.split('.')[-1]

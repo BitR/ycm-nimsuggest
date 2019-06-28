@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
-from Queue import Queue
+from queue import Queue
 from nose.tools import eq_, raises
 from ycmd.completers.nim.nimsuggest_completer import NimsuggestCompleter
 from ycmd.request_wrap import RequestWrap
@@ -41,7 +41,7 @@ class NimsuggestCompleter_test( object ):
 
   def ComputeCandidatesInner_test( self ):
     self._completer._binary = DUMMY_BINARY
-    with open( PATH_TO_MEMBERS_RES, 'r' ) as nimsugoutput:
+    with open( PATH_TO_MEMBERS_RES, 'rb' ) as nimsugoutput:
       mock = MockPopen( stdout=nimsugoutput.read(), stderr='' )
     self._completer._popener = mock
     request = self._BuildRequest(4, 3)
@@ -58,7 +58,7 @@ class NimsuggestCompleter_test( object ):
 
   def OnFileReadyToParse_test( self ):
     self._completer._binary = DUMMY_BINARY
-    with open( PATH_TO_MEMBERS_RES, 'r' ) as nimsugoutput:
+    with open( PATH_TO_MEMBERS_RES, 'rb' ) as nimsugoutput:
       mock = MockPopen( stdout=nimsugoutput.read(), stderr='' )
     self._completer._popener = mock
     request = self._BuildRequest(4, 3)
@@ -67,7 +67,7 @@ class NimsuggestCompleter_test( object ):
 
   def ProcShutsdown_test( self ):
     self._completer._binary = DUMMY_BINARY
-    with open( PATH_TO_MEMBERS_RES, 'r' ) as nimsugoutput:
+    with open( PATH_TO_MEMBERS_RES, 'rb' ) as nimsugoutput:
       mock = MockPopen( stdout=nimsugoutput.read(), stderr='' )
     self._completer._popener = mock
     request = self._BuildRequest(4, 3)
@@ -84,7 +84,7 @@ class NimsuggestCompleter_test( object ):
 
 class MockPipe(object):
   def __init__(self, contents=None):
-    self.data = ''
+    self.data = b''
     self.shouldRaise = False
     if contents:
       self.lines = contents.splitlines()
@@ -101,7 +101,7 @@ class MockPipe(object):
       return None
 
     self.line += 1
-    return self.lines[self.line - 1] + '\n'
+    return self.lines[self.line - 1] + b'\n'
 
   def write(self, data):
     if self.shouldRaise:

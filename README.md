@@ -9,18 +9,12 @@ Requirements:
 - Vim filetype [autocommand](#autocommand) for nim files
 
 ## Build and install nimsuggest
-- Build [Nim](https://github.com/nim-lang/Nim) - v0.11.2 is currently recommended
-- Build nimsuggest inside Nim/compiler/nimsuggest:
-
-        cd Nim/compiler/nimsuggest && nim c -d:release nimsuggest
-
-- Copy the nimsuggest binary to the same directory as your nim binary, to ensure they both handle compilation paths the same way
-- Make sure both binaries are in your $PATH
-
-**Note**: Nimsuggest has moved to [nim-lang/nimsuggest](https://github.com/nim-lang/nimsuggest), however that version will only build with the unstable devel branch of [Nim](https://github.com/nim-lang/Nim) for now.
+- Build [Nim](https://github.com/nim-lang/Nim) (includes nimsuggest) - v0.20.0 is currently recommended
+- Make sure both the nim and nimsuggest binaries are in your $PATH
 
 ## Vundle instructions:
 - Make sure you have [YouCompleteMe](https://github.com/Valloric/YouCompleteMe) added to you Vundle plugin list
+- Install YouCompleteMe with python3 (python3 ./install.py)
 - Clone this repo into the YouCompleteMe bundle:
 
         git clone https://github.com/BitR/ycm-nimsuggest \

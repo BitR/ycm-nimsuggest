@@ -9,8 +9,8 @@ type 'quit' to quit
 type 'debug' to toggle debug mode on/off
 type 'terse' to toggle terse mode on/off
 > sug testdata/test.nim:4:3
-sug	skProc	system.abs	proc (x: int): int{.noSideEffect, gcsafe, locks: 0.}	/nim/lib/system.nim	2297	5	""
-sug	skProc	math.binom	proc (n: int, k: int): int{.noSideEffect, gcsafe, locks: 0.}	/nim/lib/pure/math.nim	71	5	"computes the binomial coefficient"
-sug	skProc	math.ceil	proc (x: float): float{.noSideEffect.}	/nim/lib/pure/math.nim	227	7	""
+sug	skProc	system.abs	proc (x: int): int{.noSideEffect, gcsafe, locks: 0.}	/nim/lib/system.nim	2297	5	""	1	None
+sug	skProc	math.binom	proc (n: int, k: int): int{.noSideEffect, gcsafe, locks: 0.}	/nim/lib/pure/math.nim	71	5	"computes the binomial coefficient"	1	None
+sug	skProc	math.ceil	proc (x: float): float{.noSideEffect.}	/nim/lib/pure/math.nim	227	7	""	1	None
 
 > 

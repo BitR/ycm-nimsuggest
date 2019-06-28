@@ -1,4 +1,4 @@
 import math
 
-a = 42
+let a = 42
 a.
